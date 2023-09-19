@@ -1,0 +1,132 @@
+import math
+from typing import List
+import hashlib
+import time
+
+from .block import Block, BLOCK_SIZE, State
+
+PENDING_TIME = 5
+
+
+class Piece(object):
+    def __init__(self, piece_index: int, piece_size: int, piece_hash: str, file_path):
+        self.state = State.FREE
+
+        self.piece_index = piece_index
+        self.piece_size = piece_size
+        self.piece_hash = piece_hash
+
+        self.is_full: bool = False
+        # pieceが保管されているディレクトリのパス
+        self.file_path = file_path + '/' + str(piece_index)
+
+        self.number_of_blocks: int = int(math.ceil(float(piece_size) / BLOCK_SIZE))
+
+        self.raw_data: bytes = b''
+        self.blocks: List[Block] = []
+
+        self._init_blocks()
+        # signal.signal(signal.SIGALRM, self.update_block_status)
+        # signal.setitimer(signal.ITIMER_REAL, 1, 5)
+
+    def update_block_status(self):  # if block is pending for too long : set it free
+        for i, block in enumerate(self.blocks):
+            if block.state == State.PENDING and (time.time() - block.last_seen) > PENDING_TIME:
+                self.blocks[i] = Block()
+
+    def catch_timeout(self):
+        flag = False
+
+        for i, block in enumerate(self.blocks):
+            if block.state == State.PENDING and (time.time() - block.last_seen) > PENDING_TIME:
+                self.blocks[i] = Block()
+                flag = True
+
+        return flag
+
+    def set_block(self, offset, data):
+        index = int(offset / BLOCK_SIZE)
+
+        if not self.is_full and not self.blocks[index].state == State.FULL:
+            self.blocks[index].data = data
+            self.blocks[index].state = State.FULL
+
+    def get_block(self, block_offset, block_length):
+        with open(self.file_path, 'rb+') as file:
+            file.seek(block_offset)
+            data = file.read(block_length)
+            return data
+
+    def get_piece(self):
+        piece_data = self.get_block(0, self.piece_size)
+        return piece_data
+
+    def get_empty_block(self):
+        if self.is_full:
+            return None
+
+        for block_index, block in enumerate(self.blocks):
+            if block.state == State.PENDING:
+                if time.time() - block.last_seen > 4:
+                    block.state = State.FREE
+                    block.last_seen = time.time()
+
+            if block.state == State.FREE:
+                self.blocks[block_index].state = State.PENDING
+                self.blocks[block_index].last_seen = time.time()
+                return self.piece_index, block_index * BLOCK_SIZE, block.block_size
+
+        return None
+
+    def are_all_blocks_full(self):
+        for block in self.blocks:
+            if block.state == State.FREE or block.state == State.PENDING:
+                return False
+
+        return True
+
+    def set_to_full(self):
+        data = self._merge_blocks()
+        if not self._valid_blocks(data):
+            self._init_blocks()
+            return False
+
+        self.is_full = True
+        self.raw_data = data
+
+        return True
+
+    def _init_blocks(self):
+        self.blocks = []
+
+        if self.number_of_blocks > 1:
+            for i in range(self.number_of_blocks):
+                new_block = Block()
+                self.blocks.append(new_block)
+
+            if (self.piece_size % BLOCK_SIZE) > 0:
+                self.blocks[self.number_of_blocks - 1].block_size = self.piece_size % BLOCK_SIZE
+
+        else:
+            self.blocks.append(Block(block_size=int(self.piece_size)))
+
+    def _merge_blocks(self):
+        buf = b''
+
+        for block in self.blocks:
+            buf += block.data
+
+        return buf
+
+    def _valid_blocks(self, piece_raw_data):
+        hashed_piece_raw_data = hashlib.sha1(piece_raw_data).digest()
+
+        if hashed_piece_raw_data == self.piece_hash:
+            return True
+
+        return False
+
+    def write_on_disk(self):
+        with open(self.file_path, "wb") as file:
+            file.write(self.raw_data)
+        del self.raw_data
