@@ -1,8 +1,15 @@
 import os
-from flask import Flask, render_template, request, jsonify
-import psutil  # 追加
+import sqlite3
+
+from flask import Flask, render_template, request, jsonify, g
+from flask_sqlalchemy import SQLAlchemy
+
+from application.cefore import cefore_module
+import psutil
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///torrent.db'
+db = SQLAlchemy(app)
 
 
 @app.route('/')

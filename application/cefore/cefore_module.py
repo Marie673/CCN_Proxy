@@ -3,6 +3,7 @@ import cefpyco
 import sqlite3
 
 from application.bittorrent import BitTorrent
+from application import db
 
 
 class CcnNListener(threading.Thread):
