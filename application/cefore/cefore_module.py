@@ -1,5 +1,6 @@
 import threading
 import cefpyco
+import sqlite3
 
 from application.bittorrent import BitTorrent
 
