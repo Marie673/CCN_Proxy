@@ -48,3 +48,4 @@ RUN make install
 COPY ./ /cefore/proxy
 WORKDIR /cefore/proxy
 RUN pip3 install -r requirements.txt
+ 

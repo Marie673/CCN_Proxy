@@ -1,9 +1,15 @@
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
 import enum
 import hashlib
+import json
 from typing import List
 from bcoding import bdecode, bencode
 
-from application import db
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///torrent.db'
+db = SQLAlchemy(app)
 
 """
 ファイル構造
@@ -51,9 +57,8 @@ class Torrent(db.Model):
     info_hash_hex = db.Column(db.String, nullable=True)
     file_mode = db.Column(db.Enum(FileMode), nullable=True)
 
-    def __init__(self, path: str):
-        self.path: str = path  # torrentファイルが保存されているパス
-        torrent: dict = self.load_from_path(self.path)
+    def __init__(self, file):
+        torrent: dict = self.load_from_path(file)
 
         if 'announce' in torrent.keys():
             self.announce = torrent['announce']
@@ -85,7 +90,11 @@ class Torrent(db.Model):
             if 'pieces' in torrent['info'].keys():
                 new_info.pieces = torrent['info']['pieces']
             self.info = new_info
-
+    
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+    
     @staticmethod
     def load_from_path(path):
         with open(path, 'rb') as file:
