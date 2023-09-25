@@ -18,6 +18,7 @@ RUN pip3 install --upgrade pip
 RUN pip3 install setuptools click numpy
 RUN pip3 install --upgrade  build
 RUN pip3 install rich pytest pytest-sugar
+RUN apt-get remove -y python3-blinker
 
 RUN apt-get install -y wget
 RUN apt-get install -y perl
@@ -43,3 +44,7 @@ RUN ldconfig
 WORKDIR /cefore/cefpyco
 RUN cmake .
 RUN make install
+
+COPY ./ /cefore/proxy
+WORKDIR /cefore/proxy
+RUN pip3 install -r requirements.txt

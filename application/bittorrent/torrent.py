@@ -41,16 +41,15 @@ class Info:
 
 
 class Torrent(db.Model):
-    torrent: dict
 
-    announce = db.Columun(db.String, nullable=True)
-    announce_list = db.Columun(db.String, nullable=True)
-    nodes: list
-
-    info: Info
-    info_hash: bytes
-    info_hash_hex: str
-    file_mode: FileMode
+    id = db.Column(db.Integer, primary_key=True)
+    announce = db.Column(db.String, nullable=True)
+    announce_list = db.Column(db.String, nullable=True)
+    nodes = db.Column(db.String, nullable=True)  # JSON文字列として保存
+    info = db.Column(db.String, nullable=True)  # JSON文字列として保存
+    info_hash = db.Column(db.LargeBinary, nullable=True)
+    info_hash_hex = db.Column(db.String, nullable=True)
+    file_mode = db.Column(db.Enum(FileMode), nullable=True)
 
     def __init__(self, path: str):
         self.path: str = path  # torrentファイルが保存されているパス
