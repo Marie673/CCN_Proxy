@@ -1,0 +1,16 @@
+version: "3.8"
+
+services:
+
+  proxy:
+    build: ./
+    container_name: "proxy"
+    hostname: "proxy"
+    volumes:
+      - ./:/cefore/proxy
+    working_dir: "/cefore/proxy"
+    ports:
+      - "127.0.0.1:5000:5000"
+    command: >
+      bash -c "pip install --ignore-installed blinker -r requirements.txt && 
+               python3 app.py"
