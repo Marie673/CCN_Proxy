@@ -9,11 +9,11 @@ RUN apt-get upgrade -y
 RUN apt-get install -y python3.10
 RUN apt-get install -y python3.10-venv
 
-RUN apt-get install -y git build-essential libssl-dev libtool
-RUN apt-get install -y emacs
+RUN apt-get update && apt-get install -y build-essential
+RUN apt-get update && apt-get install -y git  libssl-dev libtool emacs
 RUN apt-get install -y iputils-ping net-tools ifstat
 RUN apt-get install -y cmake python3-pip
-RUN apt-get install -y xserver-xorg x11-apps
+
 RUN pip3 install --upgrade pip
 RUN pip3 install setuptools click numpy
 RUN pip3 install --upgrade  build
