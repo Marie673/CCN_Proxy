@@ -1,6 +1,4 @@
 import os
-import sqlite3
-
 from flask import Flask, render_template, request, jsonify, g
 
 from application.bittorrent import Torrent
@@ -18,6 +16,9 @@ def index():
 @app.route('/upload', methods=['POST'])
 def upload():
     file = request.files['file']
+    try:
+        file.save(os.path.join(, file))
+
     try:
         torrent = Torrent(file)
         torrent.save()
