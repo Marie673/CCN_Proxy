@@ -47,7 +47,7 @@ class Cefore(threading.Thread):
         while self.running:
             start_time = time.time()
             try:
-                info = self.cef_handle.receive(time_out_ms=1000)
+                info = self.cef_handle.receive(timeout_ms=1000)
                 if not info.is_succeeded:
                     continue
 
@@ -57,7 +57,8 @@ class Cefore(threading.Thread):
                 if info.is_data:
                     self.handle_data(info)
 
-            except cefpyco.TimeoutOccurred:
+            except Exception as e:
+                print(e)
                 self.cubic.handle_congestion_event()
 
         self.cef_handle.end()
