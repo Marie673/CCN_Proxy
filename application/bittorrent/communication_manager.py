@@ -1,6 +1,6 @@
 import asyncio
 from .entities.peer import Peer
-from .entities.message import Message, Handshake, KeepAlive, Choke, UnChoke, Interested, NotInterested, Have, BitField, Request, Piece, Cancel, Port
+from application.bittorrent.entities.peer.message import Message, Handshake, KeepAlive, Choke, UnChoke, Interested, NotInterested, Have, BitField, Request, Piece, Cancel, Port
 from logger import logger  # 必要に応じて正しいパスを指定してください
 
 class CommunicationManager:
