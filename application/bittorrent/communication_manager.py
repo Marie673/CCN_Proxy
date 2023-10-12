@@ -7,7 +7,7 @@ from .entities.peer.message import Message, Handshake, KeepAlive, Choke, UnChoke
 from .entities import Tracker
 
 
-logger = logging.getLogger(__init__)
+logger = logging.getLogger()
 
 
 MAX_PEER_CONNECT = 50
