@@ -46,13 +46,6 @@ class CommunicationManager:
 
         return random.choice(ready_peer) if ready_peer else None
 
-    async def request_piece(self, piece_index: int):
-        """指定されたピアから指定されたインデックスのピースを非同期に要求し、ピースのバイナリデータを返します。"""
-        piece = self.bittorrent.pieces[piece_index]
-        for block in piece.blocks:
-            peer = self._get_random_peer_having_piece(piece_index)
-            await peer.request_piece(piece_index, block.block_offset, block.block_length)
-
     async def add_peer(self, peer: Peer):
         """ピアをリストに追加します"""
         self.peers.append(peer)
