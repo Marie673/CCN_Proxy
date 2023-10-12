@@ -21,19 +21,21 @@ class CommunicationManager:
 
     async def listener(self):
         """ピアからのメッセージを非同期に処理します"""
+
+        # イテレート中の変更時にエラーを回避するためにcopy()
         for peer in self.peers.copy():
             try:
                 payload = await peer.reader.read(4096)
                 if not payload:
-                    await self.remove_peer(peer)
                     continue
+
+                peer.read_buffer += payload
 
                 for msg in peer.get_messages():
                     await self._process_new_message(msg, peer)
 
             except Exception as e:
                 await self.remove_peer(peer)
-                # logger.error(f"Error while listening to peer: {e}"))
 
     async def request_piece_from_peer(self, peer: Peer, piece_index: int) -> bytes:
         """指定されたピアから指定されたインデックスのピースを非同期に要求し、ピースのバイナリデータを返します。"""
@@ -48,14 +50,16 @@ class CommunicationManager:
         await peer.close()
         self.peers.remove(peer)
 
-    async def _read_from_socket(self, sock) -> bytes:
-        """ソケットからデータを非同期に読み取ります"""
-        data = b''
-        try:
-            data = await asyncio.get_event_loop().sock_recv(sock, 4096)
-        except Exception:
-            logger.exception("Recv failed")
-        return data
+    async def remove_unhealthy_peer(self):
+        for peer in self.peers.copy():
+            if peer.healthy is False:
+                await self.remove_peer(peer)
+
+    def has_unchocked_peers(self):
+        for peer in self.peers.copy():
+            if peer.is_unchoked():
+                return True
+        return False
 
     async def _process_new_message(self, new_message: Message, peer: Peer) :
         """受信したメッセージを非同期に処理します"""
