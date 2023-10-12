@@ -27,6 +27,7 @@ class CommunicationManager:
     async def listener(self):
         """ピアからのメッセージを非同期に処理します"""
         # TODO: KeepAliveとadd_peers_from_tracker()
+        await self.remove_unhealthy_peer()
 
         # イテレート中の変更時にエラーを回避するためにcopy()
         for peer in self.peers.copy():
