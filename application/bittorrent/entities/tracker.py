@@ -12,6 +12,7 @@ from .torrent import Torrent
 peer_id = '-AZ2200-6wfG2wk6wWLc'
 
 
+# TODO: 非同期化
 class SockAddr:
     def __init__(self, ip, port, allowed=True):
         self.ip = ip
