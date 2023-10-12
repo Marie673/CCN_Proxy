@@ -4,7 +4,7 @@ import bitstring
 import struct
 import time
 
-from .message import Handshake, KeepAlive, Interested, MessageDispatcher, WrongMessageException, UnChoke
+from .message import Handshake, KeepAlive, Interested, Request,MessageDispatcher, WrongMessageException, UnChoke
 
 peer_id = "test"
 
@@ -49,12 +49,10 @@ class Peer:
         now = time.time()
         return (now - self.last_call) > 0  # 0.001
 
-    def _send_to_peer(self, msg):
-        self.writer.write(msg)
-
     async def do_handshake(self):
         handshake = Handshake(self.info_hash, peer_id=bytes(peer_id, 'utf-8'))
-        self._send_to_peer(handshake.to_bytes())
+        self.writer.write(handshake.to_bytes())
+        await self.writer.drain()
 
     async def _read_block(self, length: int) -> bytes:
         try:
@@ -62,19 +60,10 @@ class Peer:
         except (asyncio.IncompleteReadError, asyncio.CancelledError, ConnectionResetError, asyncio.TimeoutError):
             return b''
 
-    async def request_piece(self, piece_index: int, block_info: tuple, on_piece_received: callable) -> bool:
-        if not block_info:
-            return False
-
-        piece_idx, block_offset, block_length = block_info
-        await self.send_interested()
-
-        block_data = await self._read_block(block_length)
-        if not block_data:
-            return False
-
-        success = on_piece_received(piece_index, block_offset, block_data)
-        return success
+    async def request_piece(self, piece_index: int, block_offset: int, block_length: int):
+        msg = Request(piece_index, block_offset, block_length)
+        self.writer.write(msg.to_bytes())
+        await self.writer.drain()
 
     async def send_interested(self):
         msg = Interested().to_bytes()
@@ -158,7 +147,8 @@ class Peer:
         self.state['peer_interested'] = True
         if self.am_choking():
             unchoke = UnChoke().to_bytes()
-            self._send_to_peer(unchoke)
+            self.writer.write(unchoke)
+            await self.writer.drain()
 
     async def handle_not_interested(self) :
         self.state['peer_interested'] = False
@@ -171,7 +161,8 @@ class Peer:
 
         if self.is_choking() and not self.state['am_interested']:
             interested = Interested().to_bytes()
-            self._send_to_peer(interested)
+            self.writer.write(interested)
+            await self.writer.drain()
             self.state['am_interested'] = True
 
     async def handle_bitfield(self, bitfield) :
@@ -182,7 +173,8 @@ class Peer:
 
         if self.is_choking() and not self.state['am_interested']:
             interested = Interested().to_bytes()
-            self._send_to_peer(interested)
+            self.writer.write(interested)
+            await self.writer.drain()
             self.state['am_interested'] = True
 
     # TODO: 未実装

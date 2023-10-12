@@ -39,7 +39,7 @@ class CommunicationManager:
 
     async def request_piece_from_peer(self, peer: Peer, piece_index: int) -> bytes:
         """指定されたピアから指定されたインデックスのピースを非同期に要求し、ピースのバイナリデータを返します。"""
-        return await peer.fetch_piece(piece_index)
+        peer.request_piece(piece_index)
 
     async def add_peer(self, peer: Peer):
         """ピアをリストに追加します"""
