@@ -20,6 +20,8 @@ class CommunicationManager:
 
     async def run(self):
         """すべてのピアとの通信を監視し続けます"""
+        self.add_peers_from_tracker()
+
         while True:
             await self.listener()
             await asyncio.sleep(1)
