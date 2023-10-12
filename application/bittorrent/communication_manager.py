@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import random
 
 from .entities.peer import Peer
 from .entities.peer.message import Message, Handshake, KeepAlive, Choke, UnChoke, Interested, NotInterested, Have, BitField, Request, Piece, Cancel, Port
@@ -37,9 +38,20 @@ class CommunicationManager:
             except Exception as e:
                 await self.remove_peer(peer)
 
-    async def request_piece_from_peer(self, peer: Peer, piece_index: int) -> bytes:
+    def _get_random_peer_having_piece(self, piece_index: int) -> Peer:
+        ready_peer = []
+        for peer in self.peers.copy():
+            if peer.is_eligible() and peer.is_unchoked() and peer.am_interested() and peer.has_piece(piece_index):
+                ready_peer.append(peer)
+
+        return random.choice(ready_peer) if ready_peer else None
+
+    async def request_piece(self, piece_index: int):
         """指定されたピアから指定されたインデックスのピースを非同期に要求し、ピースのバイナリデータを返します。"""
-        peer.request_piece(piece_index)
+        piece = self.bittorrent.pieces[piece_index]
+        for block in piece.blocks:
+            peer = self._get_random_peer_having_piece(piece_index)
+            await peer.request_piece(piece_index, block.block_offset, block.block_length)
 
     async def add_peer(self, peer: Peer):
         """ピアをリストに追加します"""

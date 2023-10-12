@@ -39,6 +39,23 @@ class Piece(object):
         """すべてのブロックが完全であるかどうかを確認します"""
         return all(block.state == State.FULL for block in self.blocks)
 
+    def get_empty_block(self):
+        if self.is_full:
+            return None
+
+        for block_index, block in enumerate(self.blocks):
+            if block.state == State.PENDING:
+                if time.time() - block.last_seen > 4:
+                    block.state = State.FREE
+                    block.last_seen = time.time()
+
+            if block.state == State.FREE:
+                self.blocks[block_index].state = State.PENDING
+                self.blocks[block_index].last_seen = time.time()
+                return self.piece_index, block_index * BLOCK_SIZE, block.block_size
+
+        return None
+
     def get_missing_block(self) -> int:
         """まだ受信していない最初のブロックのインデックスを返します"""
         for index, block in enumerate(self.blocks):
@@ -93,5 +110,5 @@ class Piece(object):
 
         async with aiofiles.open(self.file_path, "r+b") as file :
             offset = self.piece_index * self.piece_size
-            file.seek(offset)
-            file.write(self.get_data())
+            await file.seek(offset)
+            await file.write(self.get_data())

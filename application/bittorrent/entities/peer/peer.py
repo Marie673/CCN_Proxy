@@ -60,7 +60,7 @@ class Peer:
         except (asyncio.IncompleteReadError, asyncio.CancelledError, ConnectionResetError, asyncio.TimeoutError):
             return b''
 
-    async def request_piece(self, piece_index: int, block_offset: int, block_length: int):
+    async def request_block(self, piece_index: int, block_offset: int, block_length: int):
         msg = Request(piece_index, block_offset, block_length)
         self.writer.write(msg.to_bytes())
         await self.writer.drain()
