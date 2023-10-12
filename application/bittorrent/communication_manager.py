@@ -10,6 +10,9 @@ from .entities import Tracker
 logger = logging.getLogger(__init__)
 
 
+MAX_PEER_CONNECT = 50
+
+
 class CommunicationManager:
     def __init__(self, bittorrent):
         self.bittorrent = bittorrent
@@ -38,6 +41,27 @@ class CommunicationManager:
 
             except Exception as e:
                 await self.remove_peer(peer)
+
+    def add_peers_from_tracker(self):
+        tracker = Tracker(self.bittorrent.torrent_metadata)
+        new_peer_candidates: dict = tracker.get_peers_from_trackers()
+        for peer_candidate in new_peer_candidates.values() :
+            def equivalence_detection() :
+                for _peer in self.peers :
+                    if _peer.ip == peer_candidate.ip :
+                        return True
+                return False
+
+            if equivalence_detection() :
+                continue
+
+            peer = Peer(self.bittorrent.info_hash, self.bittorrent.number_of_pieces, peer_candidate.ip, peer_candidate.port)
+            if peer.do_handshake() :
+                logger.debug("add new peer" + peer.ip)
+                self.peers.append(peer)
+
+            if len(self.peers) >= MAX_PEER_CONNECT :
+                return
 
     def _get_random_peer_having_piece(self, piece_index: int) -> Peer:
         ready_peer = []
