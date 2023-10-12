@@ -4,6 +4,7 @@ import random
 
 from .entities.peer import Peer
 from .entities.peer.message import Message, Handshake, KeepAlive, Choke, UnChoke, Interested, NotInterested, Have, BitField, Request, Piece, Cancel, Port
+from .entities import Tracker
 
 
 logger = logging.getLogger(__init__)
