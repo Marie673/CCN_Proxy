@@ -1,7 +1,6 @@
 import os
 from flask import Flask, render_template, request, jsonify, g
 
-from application.bittorrent import Torrent
 import psutil
 
 app = Flask(__name__)
@@ -17,12 +16,16 @@ def index():
 def upload():
     file = request.files['file']
     try:
-        file.save(os.path.join(, file))
+        # file.save(os.path.join(, file))
+        pass
+    except:
+        pass
 
     try:
-        torrent = Torrent(file)
-        torrent.save()
-        app.logger.info(f"commit torrent info: {torrent.info_hash}")
+        # torrent = Torrent(file)
+        # torrent.save()
+        # app.logger.info(f"commit torrent info: {torrent.info_hash}")
+        pass
     except Exception as e:
         app.logger.error(e)
     return render_template('index.html')

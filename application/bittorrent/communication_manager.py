@@ -1,7 +1,12 @@
 import asyncio
+import logging
+
 from .entities.peer import Peer
-from application.bittorrent.entities.peer.message import Message, Handshake, KeepAlive, Choke, UnChoke, Interested, NotInterested, Have, BitField, Request, Piece, Cancel, Port
-from logger import logger  # 必要に応じて正しいパスを指定してください
+from .entities.peer.message import Message, Handshake, KeepAlive, Choke, UnChoke, Interested, NotInterested, Have, BitField, Request, Piece, Cancel, Port
+
+
+logger = logging.getLogger(__init__)
+
 
 class CommunicationManager:
     def __init__(self, bittorrent):
@@ -12,35 +17,36 @@ class CommunicationManager:
         """すべてのピアとの通信を監視し続けます"""
         while True:
             await self.listener()
+            await asyncio.sleep(1)
 
     async def listener(self):
         """ピアからのメッセージを非同期に処理します"""
-        for peer in self.peers:
-            if not peer.healthy:
-                self.remove_peer(peer)
+        for peer in self.peers.copy():
             try:
-                payload = await self._read_from_socket(peer.socket)
-                peer.read_buffer += payload
+                payload = await peer.reader.read(4096)
+                if not payload:
+                    await self.remove_peer(peer)
+                    continue
 
                 for msg in peer.get_messages():
                     await self._process_new_message(msg, peer)
 
             except Exception as e:
-                self.remove_peer(peer)
-                logger.error(e)
+                await self.remove_peer(peer)
+                # logger.error(f"Error while listening to peer: {e}"))
 
     async def request_piece_from_peer(self, peer: Peer, piece_index: int) -> bytes:
         """指定されたピアから指定されたインデックスのピースを非同期に要求し、ピースのバイナリデータを返します。"""
         return await peer.fetch_piece(piece_index)
 
-    def remove_peer(self, peer):
-        """指定されたピアをピアリストから削除します"""
-        if peer in self.peers:
-            try:
-                peer.socket.close()
-            except Exception:
-                pass
-            self.peers.remove(peer)
+    async def add_peer(self, peer: Peer):
+        """ピアをリストに追加します"""
+        self.peers.append(peer)
+
+    async def remove_peer(self, peer: Peer):
+        """指定されたピアとの通信を終了し、ピアをリストから削除します"""
+        await peer.close()
+        self.peers.remove(peer)
 
     async def _read_from_socket(self, sock) -> bytes:
         """ソケットからデータを非同期に読み取ります"""
@@ -51,7 +57,54 @@ class CommunicationManager:
             logger.exception("Recv failed")
         return data
 
-    async def _process_new_message(self, new_message: Message, peer: Peer):
+    async def _process_new_message(self, new_message: Message, peer: Peer) :
         """受信したメッセージを非同期に処理します"""
-        # ... [以前の回答と同様のメッセージ処理ロジック]
 
+        if isinstance(new_message, Handshake) or isinstance(new_message, KeepAlive) :
+            logger.error("Handshake or KeepALive should have already been handled")
+
+        elif isinstance(new_message, Choke) :
+            logger.debug("Choke")
+            await peer.handle_choke()
+
+        elif isinstance(new_message, UnChoke) :
+            logger.debug("UnChoke")
+            await peer.handle_unchoke()
+
+        elif isinstance(new_message, Interested) :
+            logger.debug("Interested")
+            await peer.handle_interested()
+
+        elif isinstance(new_message, NotInterested) :
+            logger.debug("NotInterested")
+            await peer.handle_not_interested()
+
+        elif isinstance(new_message, Have) :
+            # logger.debug("Have")
+            await peer.handle_have(new_message)
+
+        elif isinstance(new_message, BitField) :
+            logger.debug("BitField")
+            await peer.handle_bitfield(new_message)
+
+        elif isinstance(new_message, Request) :
+            logger.debug("Request")
+            await peer.handle_request(new_message)
+
+        if isinstance(new_message, Piece):
+            piece_index = new_message.piece_index
+            block_offset = new_message.block_offset
+            data = new_message.block
+            self.bittorrent.handle_received_block(piece_index, block_offset, data)
+
+
+        elif isinstance(new_message, Cancel) :
+            logger.debug("Cancel")
+            await peer.handle_cancel()
+
+        elif isinstance(new_message, Port) :
+            logger.debug("Port")
+            await peer.handle_port_request()
+
+        else :
+            logger.error("Unknown message")

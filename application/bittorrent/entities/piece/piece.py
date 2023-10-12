@@ -2,6 +2,8 @@ import math
 from typing import List
 import hashlib
 import time
+import asyncio
+import aiofiles
 
 from .block import Block, BLOCK_SIZE, State
 
@@ -22,111 +24,74 @@ class Piece(object):
 
         self.number_of_blocks: int = int(math.ceil(float(piece_size) / BLOCK_SIZE))
 
-        self.raw_data: bytes = b''
-        self.blocks: List[Block] = []
+        self.blocks: List[Block] = [Block() for _ in range(self.number_of_blocks)]
+        if self.piece_size % BLOCK_SIZE != 0:
+            self.blocks[-1].block_size = self.piece_size % BLOCK_SIZE
 
-        self._init_blocks()
-        # signal.signal(signal.SIGALRM, self.update_block_status)
-        # signal.setitimer(signal.ITIMER_REAL, 1, 5)
+    def reset(self):
+        """ピースの状態を初期化します"""
+        self.is_full = False
+        for block in self.blocks:
+            block.state = State.FREE
+            block.data = b''
+
+    def is_complete(self) -> bool:
+        """すべてのブロックが完全であるかどうかを確認します"""
+        return all(block.state == State.FULL for block in self.blocks)
+
+    def get_missing_block(self) -> int:
+        """まだ受信していない最初のブロックのインデックスを返します"""
+        for index, block in enumerate(self.blocks):
+            if block.state == State.FREE:
+                return index
+        return -1  # すべてのブロックが存在する場合
 
     def update_block_status(self):  # if block is pending for too long : set it free
         for i, block in enumerate(self.blocks):
             if block.state == State.PENDING and (time.time() - block.last_seen) > PENDING_TIME:
                 self.blocks[i] = Block()
 
-    def catch_timeout(self):
-        flag = False
+    def set_block(self, offset: int, data: bytes):
+        """指定されたオフセットに対応するインデックスのブロックにデータを設定します"""
+        block_index = int(offset / BLOCK_SIZE)
+        if self.blocks[block_index].state != State.FULL:
+            self.blocks[block_index].data = data
+            self.blocks[block_index].state = State.FULL
+            if self.is_complete():
+                asyncio.create_task(self._validate_and_save())
 
-        for i, block in enumerate(self.blocks):
-            if block.state == State.PENDING and (time.time() - block.last_seen) > PENDING_TIME:
-                self.blocks[i] = Block()
-                flag = True
+    async def get_data(self) -> bytes :
+        """ピースの完全なバイナリデータを返します。Lazy Loadingを使用。"""
+        if not self.is_full:
+            raise ValueError("Piece is not complete.")
 
-        return flag
+        offset = self.piece_index * self.piece_size
+        async with aiofiles.open(self.file_path, "rb") as file:
+            await file.seek(offset)
+            return await file.read(self.piece_size)
 
-    def set_block(self, offset, data):
-        index = int(offset / BLOCK_SIZE)
-
-        if not self.is_full and not self.blocks[index].state == State.FULL:
-            self.blocks[index].data = data
-            self.blocks[index].state = State.FULL
-
-    def get_block(self, block_offset, block_length):
-        with open(self.file_path, 'rb+') as file:
-            file.seek(block_offset)
-            data = file.read(block_length)
-            return data
-
-    def get_piece(self):
-        piece_data = self.get_block(0, self.piece_size)
-        return piece_data
-
-    def get_empty_block(self):
-        if self.is_full:
-            return None
-
-        for block_index, block in enumerate(self.blocks):
-            if block.state == State.PENDING:
-                if time.time() - block.last_seen > 4:
-                    block.state = State.FREE
-                    block.last_seen = time.time()
-
-            if block.state == State.FREE:
-                self.blocks[block_index].state = State.PENDING
-                self.blocks[block_index].last_seen = time.time()
-                return self.piece_index, block_index * BLOCK_SIZE, block.block_size
-
-        return None
-
-    def are_all_blocks_full(self):
-        for block in self.blocks:
-            if block.state == State.FREE or block.state == State.PENDING:
-                return False
-
-        return True
-
-    def set_to_full(self):
-        data = self._merge_blocks()
-        if not self._valid_blocks(data):
-            self._init_blocks()
-            return False
-
-        self.is_full = True
-        self.raw_data = data
-
-        return True
-
-    def _init_blocks(self):
-        self.blocks = []
-
-        if self.number_of_blocks > 1:
-            for i in range(self.number_of_blocks):
-                new_block = Block()
-                self.blocks.append(new_block)
-
-            if (self.piece_size % BLOCK_SIZE) > 0:
-                self.blocks[self.number_of_blocks - 1].block_size = self.piece_size % BLOCK_SIZE
-
-        else:
-            self.blocks.append(Block(block_size=int(self.piece_size)))
-
-    def _merge_blocks(self):
-        buf = b''
-
-        for block in self.blocks:
-            buf += block.data
-
-        return buf
-
-    def _valid_blocks(self, piece_raw_data):
-        hashed_piece_raw_data = hashlib.sha1(piece_raw_data).digest()
-
-        if hashed_piece_raw_data == self.piece_hash:
+    def _validate_piece(self) -> bool:
+        """ピースが完全であり、ハッシュが一致するかどうかを確認します"""
+        concatenated_data = b''.join([block.data for block in self.blocks])
+        if hashlib.sha1(concatenated_data).digest() == self.piece_hash:
+            self.is_full = True
             return True
-
+        self.reset()  # ピースのハッシュが一致しない場合はリセットします
         return False
 
-    def write_on_disk(self):
-        with open(self.file_path, "wb") as file:
-            file.write(self.raw_data)
-        del self.raw_data
+    async def _validate_and_save(self):
+        """ピースが完了したら、ハッシュを検証して、ディスクに保存します"""
+        if self._validate_piece():
+            await self._write_to_disk()
+            for block in self.blocks:
+                block.data = b''  # メモリを解放するためにデータをクリア
+
+    async def _write_to_disk(self):
+        """ピースのデータを指定されたファイルパスに保存します。"""
+        if not self.is_full :
+            raise ValueError("Piece is not complete.")
+
+        async with aiofiles.open(self.file_path, "r+b") as file :
+            offset = self.piece_index * self.piece_size
+            file.seek(offset)
+            file.write(self.get_data())

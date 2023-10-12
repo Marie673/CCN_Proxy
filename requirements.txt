@@ -5,3 +5,4 @@ bitstring~=3.1.9
 PyYAML~=6.0
 bcoding==1.5
 requests==2.28.2
+aiofiles==23.2.1
