@@ -101,7 +101,6 @@ class CommunicationManager:
             data = new_message.block
             self.bittorrent.handle_received_block(piece_index, block_offset, data)
 
-
         elif isinstance(new_message, Cancel) :
             logger.debug("Cancel")
             await peer.handle_cancel()
