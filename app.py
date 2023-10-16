@@ -18,7 +18,7 @@ def upload():
     file = request.files['file']
     try:
         file.save(os.path.join('/tmp/ccn_proxy/torrent', file.filename))
-        return f'{file.filename}がアップロードされました'
+        # return f'{file.filename}がアップロードされました'
     except:
         pass
 
