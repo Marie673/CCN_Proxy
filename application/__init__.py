@@ -1,3 +1,2 @@
 # bittorrentとceforeモジュールをインポート
-from application.bittorrent import bittorrent_module
-from application.cefore import cefore_module
+from .bittorrent import Torrent

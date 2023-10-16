@@ -3,6 +3,7 @@ from flask import Flask, render_template, request, jsonify, g
 
 import psutil
 
+
 app = Flask(__name__)
 
 
@@ -16,8 +17,8 @@ def index():
 def upload():
     file = request.files['file']
     try:
-        # file.save(os.path.join(, file))
-        pass
+        file.save(os.path.join('/tmp/ccn_proxy/torrent', file.filename))
+        return f'{file.filename}がアップロードされました'
     except:
         pass
 

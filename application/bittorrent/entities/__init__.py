@@ -2,3 +2,4 @@ from .peer import Peer, Message, Handshake, KeepAlive, Choke, UnChoke, Intereste
 from .piece import State
 from .piece import Piece as PieceObject
 from .tracker import Tracker
+from .torrent import Torrent
