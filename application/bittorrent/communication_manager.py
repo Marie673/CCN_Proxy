@@ -22,11 +22,13 @@ class CommunicationManager:
         self.bittorrent = bittorrent
         self.peers: list[Peer] = []
 
+        self.healthy = True
+
     async def run(self):
         """すべてのピアとの通信を監視し続けます"""
         self.add_peers_from_tracker()
 
-        while True:
+        while self.healthy:
             await self.listener()
             await asyncio.sleep(1)
 

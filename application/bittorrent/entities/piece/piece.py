@@ -28,6 +28,8 @@ class Piece(object):
         if self.piece_size % BLOCK_SIZE != 0:
             self.blocks[-1].block_size = self.piece_size % BLOCK_SIZE
 
+        self.last_seen = time.time()
+
     def reset(self):
         """ピースの状態を初期化します"""
         self.is_full = False
