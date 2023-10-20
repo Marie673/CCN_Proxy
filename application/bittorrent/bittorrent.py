@@ -34,6 +34,7 @@ class BitTorrent:
     async def run(self):
         try :
             if self.mode == Mode.BitTorrent :
+                print('test 0')
                 await self.bittorrent_handle()
             if self.mode == Mode.Proxy :
                 await self.proxy_handle()
