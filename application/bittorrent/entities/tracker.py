@@ -35,15 +35,15 @@ class Tracker(object):
 
     def get_peers_from_trackers(self):
         if hasattr(self.torrent, "announce"):
+            # if self.torrent.announce is not None:
             tracker_url = self.torrent.announce
             self.connect_tracker(tracker_url)
 
         if hasattr(self.torrent, "announce_list"):
-            for i, tracker in enumerate(self.torrent.announce_list):
-
-                tracker_url = tracker[0]
-
-                self.connect_tracker(tracker_url)
+            if self.torrent.announce_list is not None:
+                for i, tracker in enumerate(self.torrent.announce_list):
+                    tracker_url = tracker[0]
+                    self.connect_tracker(tracker_url)
 
         return self.dict_sock_addr
 
