@@ -32,15 +32,15 @@ class BitTorrent(threading.Thread):
 
         self.healthy = True
 
-    async def run(self):
+    def run(self):
         """CommunicationManagerを開始します"""
         try:
             if self.mode == Mode.BitTorrent:
-                await self.bittorrent_handle()
+                asyncio.run(self.bittorrent_handle())
             if self.mode == Mode.Proxy:
-                await self.proxy_handle()
+                asyncio.run(self.proxy_handle())
             if self.mode == Mode.Client:
-                await self.client_handle()
+                asyncio.run(self.client_handle())
         except KeyboardInterrupt:
             pass
         finally:
