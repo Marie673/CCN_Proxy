@@ -48,6 +48,7 @@ class BitTorrent(threading.Thread):
             self.comm_mgr.healthy = False
 
     async def bittorrent_handle(self):
+        print('test')
         await self.comm_mgr.run()
         while not self.all_pieces_completed() and self.healthy:
             for piece in self.pieces.copy():
