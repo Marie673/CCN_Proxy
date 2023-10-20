@@ -4,6 +4,7 @@ import time
 from enum import Enum
 
 from .entities import PieceObject
+from .entities import Torrent
 from .communication_manager import CommunicationManager
 
 
@@ -17,7 +18,7 @@ class Mode(Enum):
 
 
 class BitTorrent(threading.Thread):
-    def __init__(self, torrent_metadata, file_path, mode):
+    def __init__(self, torrent_metadata: Torrent, file_path, mode):
         super().__init__()
         self.mode = mode
 
@@ -116,11 +117,11 @@ class BitTorrent(threading.Thread):
         return True
 
     def _generate_piece_info(self):
-        piece_hashes = [self.torrent_metadata['pieces'][i:i + 20] for i in
-                        range(0, len(self.torrent_metadata['pieces']), 20)]
-        piece_size = self.torrent_metadata['piece length']
+        piece_hashes = [self.torrent_metadata.pieces[i:i + 20] for i in
+                        range(0, len(self.torrent_metadata.pieces), 20)]
+        piece_size = self.torrent_metadata.piece_length
         num_pieces = len(piece_hashes)
 
         for index in range(num_pieces):
-            size = piece_size if index != num_pieces - 1 else self.torrent_metadata['length'] % piece_size
+            size = piece_size if index != num_pieces - 1 else self.torrent_metadata.length % piece_size
             yield index, size, piece_hashes[index]
