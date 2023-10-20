@@ -31,7 +31,7 @@ class BitTorrent:
 
         self.healthy = True
 
-    def run(self) :
+    async def run(self):
         try :
             if self.mode == Mode.BitTorrent :
                 await self.bittorrent_handle()
