@@ -28,7 +28,7 @@ class BitTorrent:
         self.piece_length = self.torrent_metadata.info.piece_length
         # ピース数 の計算
         # シングルファイルと複数ファイルで計算方法が変わる. 複数ファイルの場合、ファイルのサイズの合計値が全体のデータサイズになる.
-        if self.torrent_metadata.info.file_mode == FileMode.single_file:
+        if self.torrent_metadata.file_mode == FileMode.single_file:
             if self.torrent_metadata.info.length % self.piece_length == 0:
                 self.number_of_pieces = int(self.torrent_metadata.info.length / self.piece_length)
             else:
