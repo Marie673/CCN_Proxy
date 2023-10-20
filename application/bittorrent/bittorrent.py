@@ -48,6 +48,7 @@ class BitTorrent(threading.Thread):
                 self.comm_mgr.healthy = False
 
         asyncio.run(_main())
+        print('finished.')
 
     async def bittorrent_handle(self):
         print('test')
