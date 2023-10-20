@@ -117,11 +117,11 @@ class BitTorrent(threading.Thread):
         return True
 
     def _generate_piece_info(self):
-        piece_hashes = [self.torrent_metadata.pieces[i:i + 20] for i in
-                        range(0, len(self.torrent_metadata.pieces), 20)]
-        piece_size = self.torrent_metadata.piece_length
+        piece_hashes = [self.torrent_metadata.info.pieces[i:i + 20] for i in
+                        range(0, len(self.torrent_metadata.info.pieces), 20)]
+        piece_size = self.torrent_metadata.info.piece_length
         num_pieces = len(piece_hashes)
 
         for index in range(num_pieces):
-            size = piece_size if index != num_pieces - 1 else self.torrent_metadata.length % piece_size
+            size = piece_size if index != num_pieces - 1 else self.torrent_metadata.info.length % piece_size
             yield index, size, piece_hashes[index]
