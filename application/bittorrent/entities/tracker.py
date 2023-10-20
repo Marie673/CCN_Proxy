@@ -48,6 +48,9 @@ class Tracker(object):
         return self.dict_sock_addr
 
     def connect_tracker(self, tracker_url):
+        if tracker_url is None:
+            tracker_url = 'http://test'
+
         if str.startswith(tracker_url, "http") :
             try :
                 self.http_scraper(tracker_url)
@@ -67,9 +70,10 @@ class Tracker(object):
             # logger.error("unknown scheme for: %s " % tracker_url)
 
     def http_scraper(self, tracker):
-        s = SockAddr("192.168.60.104", 8999)
-        self.dict_sock_addr[s.__hash__()] = s
-        return
+        if tracker == 'http://test':
+            s = SockAddr("192.168.60.104", 8999)
+            self.dict_sock_addr[s.__hash__()] = s
+            return
 
         params = {
             'info_hash': self.torrent.info_hash,
