@@ -22,6 +22,7 @@ class BitTorrent:
         self.mode = mode
 
         self.torrent_metadata = torrent_metadata
+        self.info_hash = torrent_metadata.info_hash_hex
         self.file_path = file_path
 
         self.pieces = [PieceObject(index, size, hash_, self.file_path) for index, size, hash_ in

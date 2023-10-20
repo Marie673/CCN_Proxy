@@ -1,0 +1,5 @@
+import asyncio
+from application.bittorrent import Torrent, Mode, BitTorrent
+t = Torrent('/share/torrent_file/dummy_128MB.torrent')
+b = BitTorrent(t, '/tmp/test/', Mode.BitTorrent)
+asyncio.run(b.run())
