@@ -4,7 +4,7 @@ import time
 from enum import Enum
 
 from .entities import PieceObject
-from .entities import Torrent
+from .entities import Torrent, FileMode
 from .communication_manager import CommunicationManager
 
 
@@ -22,7 +22,23 @@ class BitTorrent:
         self.mode = mode
 
         self.torrent_metadata = torrent_metadata
-        self.info_hash = torrent_metadata.info_hash_hex
+        self.info_hash = torrent_metadata.info_hash
+        self.info_hash_hex = torrent_metadata.info_hash_hex
+        # 1ピースのサイズ
+        self.piece_length = self.torrent_metadata.info.piece_length
+        # ピース数 の計算
+        # シングルファイルと複数ファイルで計算方法が変わる. 複数ファイルの場合、ファイルのサイズの合計値が全体のデータサイズになる.
+        if self.torrent_metadata.info.file_mode == FileMode.single_file:
+            if self.torrent_metadata.info.length % self.piece_length == 0:
+                self.number_of_pieces = int(self.torrent_metadata.info.length / self.piece_length)
+            else:
+                self.number_of_pieces = int(self.torrent_metadata.info.length / self.piece_length) + 1
+        else:
+            length: int = 0
+            for file in self.torrent_metadata.info.files:
+                length += file.length
+            self.number_of_pieces = int(length / self.piece_length)
+
         self.file_path = file_path
 
         self.pieces = [PieceObject(index, size, hash_, self.file_path) for index, size, hash_ in
