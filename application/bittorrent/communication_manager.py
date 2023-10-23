@@ -41,7 +41,7 @@ class CommunicationManager:
 
         # イテレート中の変更時にエラーを回避するためにcopy()
         for peer in self.peers.copy():
-            print(f"ip: {peer.ip}")
+            logger.debug(f"ip: {peer.ip}")
             try:
                 payload = await peer.reader.read(4096)
                 if not payload:
@@ -53,7 +53,7 @@ class CommunicationManager:
                     await self._process_new_message(msg, peer)
 
             except Exception as e:
-                logger.debug(e)
+                logger.error(e)
                 await self.remove_peer(peer)
 
     async def add_peers_from_tracker(self):
