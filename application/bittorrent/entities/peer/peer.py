@@ -57,7 +57,7 @@ class Peer:
             await self.writer.drain()
             return True
         except Exception as e:
-            pass
+            print(e)
 
     async def _read_block(self, length: int) -> bytes:
         try:
