@@ -6,7 +6,7 @@ import time
 
 from .message import Handshake, KeepAlive, Interested, Request,MessageDispatcher, WrongMessageException, UnChoke
 
-peer_id = "test"
+peer_id = "-AZ2200-6wfG2wk6wWLc"
 
 
 class Peer:
