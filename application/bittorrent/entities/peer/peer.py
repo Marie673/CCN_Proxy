@@ -77,20 +77,28 @@ class Peer:
         await self.writer.drain()
 
     async def get_messages(self) :
+        # read_bufferに4バイト以上のデータが存在し、接続が健全な間は処理を続ける
         while len(self.read_buffer) > 4 and self.healthy :
+            # ハンドシェイク処理またはキープアライブ処理を行う場合は無視
             if (not self.has_handshacked and self._handle_handshake()) or self._handle_keep_alive() :
                 continue
 
+            # メッセージのペイロード長を取得（先頭4バイト
             payload_length, = struct.unpack(">I", self.read_buffer[:4])
             total_length = payload_length + 4
 
+            # read_buffer内のデータが足りない場合はループを抜ける
             if len(self.read_buffer) < total_length :
                 break
             else :
+                # 完全なメッセージをペイロードとして取り出す
                 payload = self.read_buffer[:total_length]
+                # read_bufferから取り出した分を削除
                 self.read_buffer = self.read_buffer[total_length :]
 
             try :
+                print(payload)
+                # 取得したペイロードからメッセージを分解・処理
                 received_message = MessageDispatcher(payload).dispatch()
                 print(received_message)
                 if received_message :
