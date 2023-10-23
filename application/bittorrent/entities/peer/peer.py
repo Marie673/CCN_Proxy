@@ -53,6 +53,7 @@ class Peer:
         try:
             handshake = Handshake(self.info_hash, peer_id=bytes(peer_id, 'utf-8'))
             self.writer.write(handshake.to_bytes())
+            print(handshake.to_bytes())
             await self.writer.drain()
             return True
         except Exception as e:

@@ -36,7 +36,6 @@ class Tracker(object):
     def get_peers_from_trackers(self):
         if hasattr(self.torrent, "announce"):
             # if self.torrent.announce is not None:
-            print("test1")
             tracker_url = self.torrent.announce
             self.connect_tracker(tracker_url)
 
@@ -50,7 +49,6 @@ class Tracker(object):
 
     def connect_tracker(self, tracker_url):
         if tracker_url is None:
-            print("test2")
             tracker_url = 'http://test'
 
         if str.startswith(tracker_url, "http") :
@@ -73,7 +71,6 @@ class Tracker(object):
 
     def http_scraper(self, tracker):
         if tracker == 'http://test':
-            print("test3")
             s = SockAddr("192.168.60.104", 8999)
             self.dict_sock_addr[s.__hash__()] = s
             return
