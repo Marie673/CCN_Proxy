@@ -51,7 +51,6 @@ class BitTorrent:
     async def run(self):
         try :
             if self.mode == Mode.BitTorrent :
-                print('test 0')
                 await self.bittorrent_handle()
             if self.mode == Mode.Proxy :
                 await self.proxy_handle()
@@ -66,7 +65,6 @@ class BitTorrent:
         print('finished.')
 
     async def bittorrent_handle(self):
-        print('test')
         await self.comm_mgr.run()
         while not self.all_pieces_completed() and self.healthy:
             for piece in self.pieces.copy():

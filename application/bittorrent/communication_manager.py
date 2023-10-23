@@ -9,6 +9,7 @@ from .entities import Tracker
 from .entities import PieceObject
 
 logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
 
 MAX_PEER_CONNECT = 50
 
@@ -136,7 +137,7 @@ class CommunicationManager:
             await peer.handle_not_interested()
 
         elif isinstance(new_message, Have):
-            # logger.debug("Have")
+            logger.debug("Have")
             await peer.handle_have(new_message)
 
         elif isinstance(new_message, BitField):
