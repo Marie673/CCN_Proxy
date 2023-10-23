@@ -78,9 +78,7 @@ class Peer:
 
     async def get_messages(self) :
         # read_bufferに4バイト以上のデータが存在し、接続が健全な間は処理を続ける
-        print(f"a {self.read_buffer}")
         while len(self.read_buffer) > 4:
-            print(f"b {self.read_buffer}")
             # ハンドシェイク処理またはキープアライブ処理を行う場合は無視
             # if (not self.has_handshacked and self._handle_handshake()) or self._handle_keep_alive() :
                # continue
@@ -91,6 +89,7 @@ class Peer:
 
             # read_buffer内のデータが足りない場合はループを抜ける
             if len(self.read_buffer) < total_length :
+                print("test")
                 break
             else :
                 # 完全なメッセージをペイロードとして取り出す
@@ -106,7 +105,7 @@ class Peer:
                 if received_message :
                     yield received_message
             except WrongMessageException as e :
-                pass
+                print(e)
 
     def has_piece(self, index):
         return self.bit_field[index]
