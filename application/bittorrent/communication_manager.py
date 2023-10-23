@@ -53,7 +53,7 @@ class CommunicationManager:
 
                 peer.read_buffer += payload
 
-                for msg in peer.get_messages():
+                async for msg in peer.get_messages():
                     await self._process_new_message(msg, peer)
 
             except Exception as e:
