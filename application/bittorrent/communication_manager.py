@@ -53,7 +53,7 @@ class CommunicationManager:
                     await self._process_new_message(msg, peer)
 
             except Exception as e:
-                print(e)
+                logger.debug(e)
                 await self.remove_peer(peer)
 
     async def add_peers_from_tracker(self):
