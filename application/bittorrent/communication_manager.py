@@ -44,7 +44,7 @@ class CommunicationManager:
         # await self.remove_unhealthy_peer()
 
         # イテレート中の変更時にエラーを回避するためにcopy()
-        for peer in self.peers:
+        for peer in self.peers.copy():
             logger.debug(f"ip: {peer.ip}")
             try:
                 payload = await peer.reader.read(4096)

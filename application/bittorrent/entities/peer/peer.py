@@ -78,7 +78,7 @@ class Peer:
 
     async def get_messages(self) :
         # read_bufferに4バイト以上のデータが存在し、接続が健全な間は処理を続ける
-        while len(self.read_buffer) > 4 and self.healthy :
+        while len(self.read_buffer) > 4:
             print(self.read_buffer)
             # ハンドシェイク処理またはキープアライブ処理を行う場合は無視
             # if (not self.has_handshacked and self._handle_handshake()) or self._handle_keep_alive() :
