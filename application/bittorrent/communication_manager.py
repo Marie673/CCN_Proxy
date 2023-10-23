@@ -36,7 +36,7 @@ class CommunicationManager:
         """ピアからのメッセージを非同期に処理します"""
         # KeepAliveとトラッカーからピアの追加
         # await self.add_peers_from_tracker()
-        await self.remove_unhealthy_peer()
+        # await self.remove_unhealthy_peer()
 
         # イテレート中の変更時にエラーを回避するためにcopy()
         for peer in self.peers.copy():
@@ -52,7 +52,6 @@ class CommunicationManager:
 
             except Exception as e:
                 await self.remove_peer(peer)
-
     def add_peers_from_tracker(self):
         tracker = Tracker(self.bittorrent.torrent_metadata)
         new_peer_candidates: dict = tracker.get_peers_from_trackers()
