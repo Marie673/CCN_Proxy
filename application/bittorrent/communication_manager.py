@@ -68,7 +68,7 @@ class CommunicationManager:
 
             peer = Peer(self.bittorrent.info_hash, self.bittorrent.number_of_pieces, peer_candidate.ip,
                         peer_candidate.port)
-            if asyncio.run(peer.do_handshake()):
+            if asyncio.run(peer.connect()):
                 logger.debug("add new peer" + peer.ip)
                 self.peers.append(peer)
 

@@ -37,8 +37,14 @@ class Peer:
         return '{}:{}:{}'.format(self.info_hash, self.ip, self.port)
 
     async def connect(self):
-        self.reader, self.writer = await asyncio.open_connection(self.ip, self.port)
-        await self.do_handshake()
+        try:
+            self.reader, self.writer = await asyncio.open_connection(self.ip, self.port)
+            await self.do_handshake()
+            return True
+        except Exception as e:
+            print(e)
+
+        return False
 
     async def close(self):
         if self.writer:
@@ -50,14 +56,10 @@ class Peer:
         return (now - self.last_call) > 0  # 0.001
 
     async def do_handshake(self):
-        try:
-            handshake = Handshake(self.info_hash, peer_id=bytes(peer_id, 'utf-8'))
-            self.writer.write(handshake.to_bytes())
-            print(handshake.to_bytes())
-            await self.writer.drain()
-            return True
-        except Exception as e:
-            print(e)
+        handshake = Handshake(self.info_hash, peer_id=bytes(peer_id, 'utf-8'))
+        self.writer.write(handshake.to_bytes())
+        print(handshake.to_bytes())
+        await self.writer.drain()
 
     async def _read_block(self, length: int) -> bytes:
         try:
