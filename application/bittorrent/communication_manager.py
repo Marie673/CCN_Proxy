@@ -9,6 +9,10 @@ from .entities import Tracker
 from .entities import PieceObject
 
 logger = logging.getLogger()
+handler = logging.StreamHandler()
+formatter = logging.Formatter("[%(asctime)s] [%(levelname)s] [%(filename)s:%(lineno)d %(funcName)s] %(message)s ")
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 logger.setLevel(logging.DEBUG)
 
 MAX_PEER_CONNECT = 50
