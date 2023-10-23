@@ -92,6 +92,7 @@ class Peer:
 
             try :
                 received_message = MessageDispatcher(payload).dispatch()
+                print(received_message)
                 if received_message :
                     yield received_message
             except WrongMessageException as e :

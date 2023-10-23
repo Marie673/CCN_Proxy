@@ -52,7 +52,6 @@ class CommunicationManager:
                     continue
 
                 peer.read_buffer += payload
-                print(payload)
 
                 async for msg in peer.get_messages():
                     await self._process_new_message(msg, peer)
