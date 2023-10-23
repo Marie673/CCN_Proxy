@@ -1,3 +1,4 @@
+import logging
 from struct import unpack, pack
 import random
 import socket
@@ -150,7 +151,7 @@ class Handshake(Message):
                          reserved,
                          self.info_hash,
                          self.peer_id)
-        print(f"{self.peer_id}, {self.info_hash}, {handshake}")
+        logging.debug(f"{self.peer_id}, {self.info_hash}, {handshake}")
         return handshake
 
     @classmethod
