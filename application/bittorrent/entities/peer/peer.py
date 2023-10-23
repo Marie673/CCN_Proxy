@@ -20,6 +20,7 @@ class Peer:
         self.writer: Optional[asyncio.StreamWriter] = None
 
         self.info_hash = info_hash
+        self.has_handshacked = False
         self.bit_field = bitstring.BitArray(number_of_pieces)
 
         self.last_call = time.time()
