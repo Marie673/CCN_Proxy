@@ -50,9 +50,13 @@ class Peer:
         return (now - self.last_call) > 0  # 0.001
 
     async def do_handshake(self):
-        handshake = Handshake(self.info_hash, peer_id=bytes(peer_id, 'utf-8'))
-        self.writer.write(handshake.to_bytes())
-        await self.writer.drain()
+        try:
+            handshake = Handshake(self.info_hash, peer_id=bytes(peer_id, 'utf-8'))
+            self.writer.write(handshake.to_bytes())
+            await self.writer.drain()
+            return True
+        except Exception as e:
+            pass
 
     async def _read_block(self, length: int) -> bytes:
         try:
