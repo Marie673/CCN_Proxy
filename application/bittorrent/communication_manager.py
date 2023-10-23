@@ -26,7 +26,7 @@ class CommunicationManager:
 
     async def run(self):
         """すべてのピアとの通信を監視し続けます"""
-        self.add_peers_from_tracker()
+        await self.add_peers_from_tracker()
 
         while self.healthy:
             await self.listener()
@@ -52,7 +52,8 @@ class CommunicationManager:
 
             except Exception as e:
                 await self.remove_peer(peer)
-    def add_peers_from_tracker(self):
+
+    async def add_peers_from_tracker(self):
         tracker = Tracker(self.bittorrent.torrent_metadata)
         new_peer_candidates: dict = tracker.get_peers_from_trackers()
         for peer_candidate in new_peer_candidates.values():
@@ -67,7 +68,7 @@ class CommunicationManager:
 
             peer = Peer(self.bittorrent.info_hash, self.bittorrent.number_of_pieces, peer_candidate.ip,
                         peer_candidate.port)
-            if asyncio.run(peer.connect()):
+            if await peer.connect():
                 logger.debug("add new peer" + peer.ip)
                 self.peers.append(peer)
 
