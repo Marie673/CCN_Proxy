@@ -30,7 +30,6 @@ class CommunicationManager:
         await self.add_peers_from_tracker()
 
         while self.healthy:
-            print("test")
             await self.listener()
             await asyncio.sleep(1)
 
@@ -43,6 +42,7 @@ class CommunicationManager:
         # イテレート中の変更時にエラーを回避するためにcopy()
         for peer in self.peers.copy():
             try:
+                print(peer.ip)
                 payload = await peer.reader.read(4096)
                 if not payload:
                     continue
