@@ -41,7 +41,7 @@ class CommunicationManager:
 
         # イテレート中の変更時にエラーを回避するためにcopy()
         for peer in self.peers.copy():
-            print(peer.ip)
+            print(f"ip: {peer.ip}")
             try:
                 payload = await peer.reader.read(4096)
                 if not payload:
