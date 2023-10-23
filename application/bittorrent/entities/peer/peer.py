@@ -86,10 +86,9 @@ class Peer:
             # メッセージのペイロード長を取得（先頭4バイト
             payload_length, = struct.unpack(">I", self.read_buffer[:4])
             total_length = payload_length + 4
-
+            print(total_length)
             # read_buffer内のデータが足りない場合はループを抜ける
             if len(self.read_buffer) < total_length :
-                print("test")
                 break
             else :
                 # 完全なメッセージをペイロードとして取り出す
