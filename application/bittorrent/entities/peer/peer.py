@@ -51,7 +51,6 @@ class Peer:
 
     async def do_handshake(self):
         try:
-            print("test")
             handshake = Handshake(self.info_hash, peer_id=bytes(peer_id, 'utf-8'))
             self.writer.write(handshake.to_bytes())
             print(handshake.to_bytes())
