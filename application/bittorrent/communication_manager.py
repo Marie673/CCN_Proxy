@@ -30,6 +30,7 @@ class CommunicationManager:
         await self.add_peers_from_tracker()
 
         while self.healthy:
+            print("test")
             await self.listener()
             await asyncio.sleep(1)
 
