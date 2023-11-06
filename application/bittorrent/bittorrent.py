@@ -7,7 +7,6 @@ from .entities import PieceObject
 from .entities import Torrent, FileMode
 from .communication_manager import CommunicationManager
 
-
 TIMEOUT = 4.0
 
 
@@ -49,16 +48,16 @@ class BitTorrent:
         self.healthy = True
 
     async def run(self):
-        try :
-            if self.mode == Mode.BitTorrent :
+        try:
+            if self.mode == Mode.BitTorrent:
                 await self.bittorrent_handle()
-            if self.mode == Mode.Proxy :
+            if self.mode == Mode.Proxy:
                 await self.proxy_handle()
-            if self.mode == Mode.Client :
+            if self.mode == Mode.Client:
                 await self.client_handle()
-        except KeyboardInterrupt :
+        except KeyboardInterrupt:
             pass
-        finally :
+        finally:
             self.healthy = False
             self.comm_mgr.healthy = False
 
